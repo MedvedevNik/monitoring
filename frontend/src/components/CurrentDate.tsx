@@ -1,14 +1,20 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
+import { Theme } from "../types";
 
-const DateContainer = styled.div`
+interface Props {
+  theme: Theme;
+}
+
+const DateContainer = styled.div<{ theme: Theme }>`
   display: flex;
   align-items: center;
   flex-direction: column;
   justify-content: center;
   font-size: 1.2em;
   font-weight: bold;
-  color: #0056b3;
+  color: ${(props) => props.theme.dateText};
+  transition: color 0.5s ease;
 `;
 
 const DateText = styled.p`
@@ -20,7 +26,7 @@ const TimeText = styled.p`
   margin: 0;
 `;
 
-const CurrentDate = () => {
+const CurrentDate: React.FC<Props> = ({ theme }) => {
   const [date, setDate] = useState(new Date());
 
   useEffect(() => {
@@ -46,7 +52,7 @@ const CurrentDate = () => {
   });
 
   return (
-    <DateContainer>
+    <DateContainer theme={theme}>
       <DateText>{formattedDate}</DateText>
       <TimeText>{formattedTime}</TimeText>
     </DateContainer>

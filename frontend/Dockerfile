@@ -5,7 +5,7 @@ FROM node:18-alpine
 WORKDIR /app
 
 # Копируем package.json и package-lock.json
-COPY package*.json ./
+COPY package*.json ./.
 
 # Устанавливаем зависимости
 RUN npm install
@@ -20,7 +20,7 @@ RUN npm run build
 FROM nginx:alpine
 
 # Копируем собранные файлы в директорию Nginx
-COPY --from=0 /app/build /usr/share/nginx/html
+COPY --from=0 /app/dist /usr/share/nginx/html
 
 # Открываем порт 80
 EXPOSE 80

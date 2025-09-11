@@ -1,15 +1,25 @@
 import React from "react";
 import styled from "styled-components";
-import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
+import {
+  Chart as ChartJS,
+  ArcElement,
+  Tooltip,
+  Legend,
+  ChartOptions,
+  Plugin,
+} from "chart.js";
 import { Doughnut } from "react-chartjs-2";
 import ChartDataLabels from "chartjs-plugin-datalabels";
+import { DeviceData, Theme } from "../types";
 
 // Регистрируем компоненты Chart.js
 ChartJS.register(ArcElement, Tooltip, Legend, ChartDataLabels);
 
-// ------------------------------------
-// Стилизованные компоненты
-// ------------------------------------
+interface Props {
+  data: DeviceData[];
+  theme: Theme;
+}
+
 const ChartBox = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -18,22 +28,33 @@ const ChartBox = styled.div`
   margin-bottom: 30px;
 `;
 
-const ChartContainer = styled.div`
-  background-color: #ffffff;
+const ChartContainer = styled.div<{ theme: Theme }>`
+  background-color: ${(props) => props.theme.cardBackground};
   padding: 20px;
   border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: ${(props) => props.theme.cardShadow};
+  transition:
+    background-color 0.5s ease,
+    box-shadow 0.5s ease;
 `;
 
-const centerTextPlugin = {
+const ChartTitle = styled.h3<{ theme: Theme }>`
+  text-align: center;
+  margin-bottom: 10px;
+  color: ${(props) => props.theme.chartTitle};
+  transition: color 0.5s ease;
+`;
+
+const centerTextPlugin: Plugin<"doughnut"> = {
   id: "centerText",
-  beforeDraw: (chart) => {
+  beforeDraw: (chart, args, pluginOptions) => {
     const {
       ctx,
       chartArea: { left, top, width, height },
     } = chart;
-    const total = chart.getDatasetMeta(0).total;
-    const count = chart.data.datasets[0].data[0];
+    const dataset = chart.data.datasets[0];
+    const total = dataset.data.reduce((sum, val) => sum + Number(val), 0);
+    const count = dataset.data[0];
     const percentage =
       total > 0 ? ((count / total) * 100).toFixed(0) + "%" : "0%";
 
@@ -44,13 +65,13 @@ const centerTextPlugin = {
     const text = percentage;
     const textX = left + (width - ctx.measureText(text).width) / 2;
     const textY = top + height / 2;
-    ctx.fillStyle = "#333";
+    ctx.fillStyle = pluginOptions.color;
     ctx.fillText(text, textX, textY);
     ctx.save();
   },
 };
 
-const DashboardCharts = ({ data }) => {
+const DashboardCharts: React.FC<Props> = ({ data, theme }) => {
   const armDevices = data.filter(
     (row) => row.arm && row.arm.toLowerCase() === "да"
   );
@@ -67,6 +88,52 @@ const DashboardCharts = ({ data }) => {
   const totalDevices = data.length;
   const armCount = armDevices.length;
 
+  const getOsCounts = (devices: DeviceData[]) =>
+    devices.reduce(
+      (acc, row) => {
+        const os = row["version_os"] || "Неизвестно";
+        if (os.toLowerCase().includes("al")) {
+          acc["Astra Linux"] = (acc["Astra Linux"] || 0) + 1;
+        } else if (os.toLowerCase().includes("win_server")) {
+          acc["Win Server"] = (acc["Win Server"] || 0) + 1;
+        } else if (os.toLowerCase().includes("win")) {
+          acc["Windows"] = (acc["Windows"] || 0) + 1;
+        } else {
+          acc["Другие"] = (acc["Другие"] || 0) + 1;
+        }
+        return acc;
+      },
+      {} as Record<string, number>
+    );
+  const osCounts = getOsCounts(armDevices);
+  const orderedLabels = ["Astra Linux", "Windows", "Win Server", "Другие"];
+  const orderedData = orderedLabels.map((label) => osCounts[label] || 0);
+
+  const getAstraVersions = (devices: DeviceData[]) =>
+    devices.reduce(
+      (acc, row) => {
+        const os = row["version_os"] || "Неизвестно";
+        if (os.toLowerCase().includes("al")) {
+          if (os.toLowerCase().includes("al 1.6")) {
+            acc["Astra Linux 1.6"] = (acc["Astra Linux 1.6"] || 0) + 1;
+          } else if (os.toLowerCase().includes("al 1.8")) {
+            acc["Astra Linux 1.8"] = (acc["Astra Linux 1.8"] || 0) + 1;
+          } else {
+            acc["Astra Linux 1.7"] = (acc["Astra Linux 1.7"] || 0) + 1;
+          }
+        }
+        return acc;
+      },
+      {} as Record<string, number>
+    );
+  const osALCounts = getAstraVersions(armDevices);
+  const orderedALLabels = [
+    "Astra Linux 1.8",
+    "Astra Linux 1.7",
+    "Astra Linux 1.6",
+  ];
+  const orderedALData = orderedALLabels.map((label) => osALCounts[label] || 0);
+
   const armStatusData = {
     labels: ["АРМ", "Не АРМ"],
     datasets: [
@@ -80,21 +147,6 @@ const DashboardCharts = ({ data }) => {
     ],
   };
 
-  const osCounts = armDevices.reduce((acc, row) => {
-    const os = row["version_os"] || "Неизвестно";
-    if (os.toLowerCase().includes("al")) {
-      acc["Astra Linux"] = (acc["Astra Linux"] || 0) + 1;
-    } else if (os.toLowerCase().includes("win_server")) {
-      acc["Win Server"] = (acc["Win Server"] || 0) + 1;
-    } else if (os.toLowerCase().includes("win")) {
-      acc["Windows"] = (acc["Windows"] || 0) + 1;
-    } else {
-      acc["Другие"] = (acc["Другие"] || 0) + 1;
-    }
-    return acc;
-  }, {});
-  const orderedLabels = ["Astra Linux", "Windows", "Win Server", "Другие"];
-  const orderedData = orderedLabels.map((label) => osCounts[label] || 0);
   const osData = {
     labels: orderedLabels,
     datasets: [
@@ -108,26 +160,6 @@ const DashboardCharts = ({ data }) => {
     ],
   };
 
-  const osALCounts = armDevices.reduce((acc, row) => {
-    const os = row["version_os"] || "Неизвестно";
-    console.log(os.toLowerCase());
-    if (os.toLowerCase().includes("al")) {
-      if (os.toLowerCase().includes("al 1.6")) {
-        acc["Astra Linux 1.6"] = (acc["Astra Linux 1.6"] || 0) + 1;
-      } else if (os.toLowerCase().includes("al 1.8")) {
-        acc["Astra Linux 1.8"] = (acc["Astra Linux 1.8"] || 0) + 1;
-      } else {
-        acc["Astra Linux 1.7"] = (acc["Astra Linux 1.7"] || 0) + 1;
-      }
-    }
-    return acc;
-  }, {});
-  const orderedALLabels = [
-    "Astra Linux 1.8",
-    "Astra Linux 1.7",
-    "Astra Linux 1.6",
-  ];
-  const orderedALData = orderedALLabels.map((label) => osALCounts[label] || 0);
   const osALData = {
     labels: orderedALLabels,
     datasets: [
@@ -142,7 +174,7 @@ const DashboardCharts = ({ data }) => {
   };
 
   const errorsStatusData = {
-    labels: ["ARM без ошибок", "ARM с ошибоками"],
+    labels: ["ARM без ошибок", "ARM с ошибками"],
     datasets: [
       {
         label: "Количество устройств",
@@ -180,18 +212,24 @@ const DashboardCharts = ({ data }) => {
     ],
   };
 
-  const options = {
+  const options: ChartOptions<"doughnut"> = {
     cutout: "70%",
     responsive: true,
     plugins: {
       legend: {
         position: "bottom",
+        labels: {
+          color: theme.chartTitle,
+        },
       },
       tooltip: {
         callbacks: {
-          label: function (tooltipItem) {
+          label: (tooltipItem) => {
             const data = tooltipItem.dataset.data;
-            const total = data.reduce((sum, val) => sum + val, 0);
+            const total = data.reduce(
+              (sum: number, val: number) => sum + val,
+              0
+            );
             const value = data[tooltipItem.dataIndex];
             const percentage = ((value / total) * 100).toFixed(2) + "%";
             return `${tooltipItem.label}: ${value} (${percentage})`;
@@ -200,60 +238,61 @@ const DashboardCharts = ({ data }) => {
       },
       datalabels: {
         color: "#fff",
-        formatter: (value, context) => {
-          return value;
-        },
+        formatter: (value) => value,
         font: {
           weight: "bold",
         },
+      },
+      centerText: {
+        color: theme.chartCenterText,
       },
     },
   };
 
   return (
     <ChartBox>
-      <ChartContainer>
-        <h3>Статус АРМ</h3>
+      <ChartContainer theme={theme}>
+        <ChartTitle theme={theme}>Статус АРМ</ChartTitle>
         <Doughnut
           data={armStatusData}
           options={options}
           plugins={[centerTextPlugin]}
         />
       </ChartContainer>
-      <ChartContainer>
-        <h3>Операционная система на АРМ</h3>
+      <ChartContainer theme={theme}>
+        <ChartTitle theme={theme}>Операционная система на АРМ</ChartTitle>
         <Doughnut
           data={osData}
           options={options}
           plugins={[centerTextPlugin]}
         />
       </ChartContainer>
-      <ChartContainer>
-        <h3>Версия Astra linux на АРМ</h3>
+      <ChartContainer theme={theme}>
+        <ChartTitle theme={theme}>Версия Astra linux на АРМ</ChartTitle>
         <Doughnut
           data={osALData}
           options={options}
           plugins={[centerTextPlugin]}
         />
       </ChartContainer>
-      <ChartContainer>
-        <h3>ksc на ARM</h3>
+      <ChartContainer theme={theme}>
+        <ChartTitle theme={theme}>ksc на ARM</ChartTitle>
         <Doughnut
           data={kscStatusData}
           options={options}
           plugins={[centerTextPlugin]}
         />
       </ChartContainer>
-      <ChartContainer>
-        <h3>АРМ в Puppet</h3>
+      <ChartContainer theme={theme}>
+        <ChartTitle theme={theme}>АРМ в Puppet</ChartTitle>
         <Doughnut
           data={puppetARMStatusData}
           options={options}
           plugins={[centerTextPlugin]}
         />
       </ChartContainer>
-      <ChartContainer>
-        <h3>ARM без ошибок</h3>
+      <ChartContainer theme={theme}>
+        <ChartTitle theme={theme}>ARM без ошибок</ChartTitle>
         <Doughnut
           data={errorsStatusData}
           options={options}
