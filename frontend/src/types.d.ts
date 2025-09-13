@@ -4,8 +4,8 @@ export interface DeviceData {
   arm: "Да" | "Нет";
   ksc: "Да" | "Нет";
   puppet: "Да" | "Нет";
-  error?: "Да" | "Нет"
-  "version_os": string;
+  error?: "Да" | "Нет";
+  version_os: string;
 }
 
 export interface Theme {
@@ -23,4 +23,19 @@ export interface Theme {
   tableRowBorder: string;
   chartTitle: string;
   chartCenterText: string;
+}
+
+declare module "*.png" {
+  const value: string;
+  export default value;
+}
+
+declare module "*.svg" {
+  const value: string;
+  export default value;
+}
+
+declare module "*.jpg" {
+  const value: string;
+  export default value;
 }

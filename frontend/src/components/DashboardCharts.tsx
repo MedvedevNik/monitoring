@@ -1,5 +1,4 @@
 import React from "react";
-import styled from "styled-components";
 import {
   Chart as ChartJS,
   ArcElement,
@@ -8,6 +7,7 @@ import {
   ChartOptions,
   Plugin,
 } from "chart.js";
+import { ChartBox, ChartContainer, ChartTitle } from "./DashboardCharts.styles";
 import { Doughnut } from "react-chartjs-2";
 import ChartDataLabels from "chartjs-plugin-datalabels";
 import { DeviceData, Theme } from "../types";
@@ -19,31 +19,6 @@ interface Props {
   data: DeviceData[];
   theme: Theme;
 }
-
-const ChartBox = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 20px;
-  justify-items: center;
-  margin-bottom: 30px;
-`;
-
-const ChartContainer = styled.div<{ theme: Theme }>`
-  background-color: ${(props) => props.theme.cardBackground};
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: ${(props) => props.theme.cardShadow};
-  transition:
-    background-color 0.5s ease,
-    box-shadow 0.5s ease;
-`;
-
-const ChartTitle = styled.h3<{ theme: Theme }>`
-  text-align: center;
-  margin-bottom: 10px;
-  color: ${(props) => props.theme.chartTitle};
-  transition: color 0.5s ease;
-`;
 
 const centerTextPlugin: Plugin<"doughnut"> = {
   id: "centerText",
@@ -260,7 +235,7 @@ const DashboardCharts: React.FC<Props> = ({ data, theme }) => {
         />
       </ChartContainer>
       <ChartContainer theme={theme}>
-        <ChartTitle theme={theme}>Операционная система на АРМ</ChartTitle>
+        <ChartTitle theme={theme}>ОС на АРМ</ChartTitle>
         <Doughnut
           data={osData}
           options={options}
@@ -268,7 +243,7 @@ const DashboardCharts: React.FC<Props> = ({ data, theme }) => {
         />
       </ChartContainer>
       <ChartContainer theme={theme}>
-        <ChartTitle theme={theme}>Версия Astra linux на АРМ</ChartTitle>
+        <ChartTitle theme={theme}>Версия AL на АРМ</ChartTitle>
         <Doughnut
           data={osALData}
           options={options}

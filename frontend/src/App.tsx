@@ -10,6 +10,7 @@ import useFetchData from "./hooks/useFetchData";
 import useThemeSwitcher from "./hooks/useThemeSwitcher";
 import { AppMain, AppContainer, Header, Title, Footer } from "./App.styles";
 import { GlobalStyle } from "./GlobalStyle";
+// import logo from "./assets/itlogo.png";
 
 const App: React.FC = () => {
   const apiUrl =
@@ -28,6 +29,7 @@ const App: React.FC = () => {
         <AppMain theme={theme}>
           <AppContainer theme={theme}>
             <Header>
+              {/* <img src={logo} alt="Логотип компании" /> */}
               <Title>Система мониторинга</Title>
               <CurrentDate theme={theme} />
             </Header>
