@@ -1,6 +1,10 @@
 import styled from "styled-components";
 import { Theme } from "../types";
 
+export const NetworkSection = styled.section`
+  flex-basis: 28%;
+`;
+
 export const Subtitle = styled.h2`
   font-size: 1.75em;
   font-weight: 600;
@@ -15,10 +19,10 @@ export const Subtitle = styled.h2`
 
 export const ChartBox = styled.div`
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  grid-template-rows: 1fr 1fr;
-  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 20px;
   justify-items: center;
+  margin-bottom: 30px;
 `;
 
 export const ChartContainer = styled.div<{ theme: Theme }>`
@@ -41,8 +45,4 @@ export const ChartTitle = styled.h3<{ theme: Theme }>`
   margin-bottom: 10px;
   color: ${(props) => props.theme.chartTitle};
   transition: color 0.5s ease;
-`;
-
-export const ChartSection = styled.section<{ theme: Theme }>`
-  flex-basis: 60%;
 `;

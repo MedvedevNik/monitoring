@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
 import { DeviceData } from "../types";
+import mockData from "../mock_data.json"; // Импортируем мок-данные
 
 // Хук для получения данных с API
 const useFetchData = (
-  url: string
+  url: string,
+  useMock: boolean = false // Добавляем параметр для использования мок-данных
 ): { data: DeviceData[]; loading: boolean; error: Error | null } => {
   const [data, setData] = useState<DeviceData[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -11,6 +13,15 @@ const useFetchData = (
 
   useEffect(() => {
     const fetchData = async () => {
+      if (useMock) {
+        // Если используем мок-данные, имитируем задержку и возвращаем их
+        setTimeout(() => {
+          setData(mockData as DeviceData[]); // Приводим к типу DeviceData[]
+          setLoading(false);
+        }, 500); // Имитация задержки в 500мс
+        return;
+      }
+
       try {
         const response = await fetch(url);
         if (!response.ok) {
@@ -29,8 +40,9 @@ const useFetchData = (
       }
     };
     fetchData();
-  }, [url]);
+  }, [url, useMock]); // Добавляем useMock в зависимости
 
+  console.log(data, "data");
   return { data, loading, error };
 };
 

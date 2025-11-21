@@ -13,7 +13,7 @@ export const AppMain = styled.main<{ theme: Theme }>`
 `;
 
 export const AppContainer = styled.div`
-  max-width: 1400px;
+  max-width: 1920px;
   margin: 0 auto;
 `;
 
@@ -21,7 +21,7 @@ export const Header = styled.header`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 40px;
+  margin-bottom: 16px;
 
   @media (max-width: 768px) {
     flex-direction: column;
@@ -40,11 +40,7 @@ export const Title = styled.h1`
   }
 `;
 
-export const Footer = styled.footer<{ theme: Theme }>`
-  text-align: center;
-  color: ${(props) => props.theme.appText};
-  margin-top: 40px;
-  padding-top: 20px;
-  border-top: 1px solid ${(props) => props.theme.tableRowBorder};
-  transition: color 0.5s ease;
+export const ChartsSection = styled.section<{ theme: Theme }>`
+  display: flex;
+  justify-content: space-between;
 `;

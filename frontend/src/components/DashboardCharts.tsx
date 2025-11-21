@@ -7,7 +7,13 @@ import {
   ChartOptions,
   Plugin,
 } from "chart.js";
-import { ChartBox, ChartContainer, ChartTitle } from "./DashboardCharts.styles";
+import {
+  ChartBox,
+  ChartContainer,
+  ChartTitle,
+  Subtitle,
+  ChartSection,
+} from "./DashboardCharts.styles";
 import { Doughnut } from "react-chartjs-2";
 import ChartDataLabels from "chartjs-plugin-datalabels";
 import { DeviceData, Theme } from "../types";
@@ -47,7 +53,10 @@ const centerTextPlugin: Plugin<"doughnut"> = {
 };
 
 const DashboardCharts: React.FC<Props> = ({ data, theme }) => {
-  const armDevices = data.filter(
+  const filteredData = data.filter(
+    (row) => row.lan && row.lan.toLowerCase() === "лвс"
+  );
+  const armDevices = filteredData.filter(
     (row) => row.arm && row.arm.toLowerCase() === "да"
   );
   const errorsCount = armDevices.filter(
@@ -60,7 +69,7 @@ const DashboardCharts: React.FC<Props> = ({ data, theme }) => {
     (row) => row.puppet && row.puppet.toLowerCase() === "да"
   ).length;
 
-  const totalDevices = data.length;
+  const totalDevices = filteredData.length;
   const armCount = armDevices.length;
 
   const getOsCounts = (devices: DeviceData[]) =>
@@ -73,15 +82,13 @@ const DashboardCharts: React.FC<Props> = ({ data, theme }) => {
           acc["Win Server"] = (acc["Win Server"] || 0) + 1;
         } else if (os.toLowerCase().includes("win")) {
           acc["Windows"] = (acc["Windows"] || 0) + 1;
-        } else {
-          acc["Другие"] = (acc["Другие"] || 0) + 1;
         }
         return acc;
       },
       {} as Record<string, number>
     );
   const osCounts = getOsCounts(armDevices);
-  const orderedLabels = ["Astra Linux", "Windows", "Win Server", "Другие"];
+  const orderedLabels = ["Astra Linux", "Windows", "Win Server"];
   const orderedData = orderedLabels.map((label) => osCounts[label] || 0);
 
   const getAstraVersions = (devices: DeviceData[]) =>
@@ -110,13 +117,13 @@ const DashboardCharts: React.FC<Props> = ({ data, theme }) => {
   const orderedALData = orderedALLabels.map((label) => osALCounts[label] || 0);
 
   const armStatusData = {
-    labels: ["АРМ", "Не АРМ"],
+    labels: ["АРМ", "Другие устройства"],
     datasets: [
       {
         label: "Количество устройств",
         data: [armCount, totalDevices - armCount],
-        backgroundColor: ["#4CAF50", "#FF6384"],
-        hoverBackgroundColor: ["#45a049", "#FF4263"],
+        backgroundColor: ["#4CAF50", "#fd0000ff"],
+        hoverBackgroundColor: ["#45a049", "#db0000ff"],
         borderWidth: 0,
       },
     ],
@@ -128,8 +135,8 @@ const DashboardCharts: React.FC<Props> = ({ data, theme }) => {
       {
         label: "Количество устройств",
         data: orderedData,
-        backgroundColor: ["#36A2EB", "#FFCE56", "#8e5ea2", "#3cba9f"],
-        hoverBackgroundColor: ["#2A92DB", "#EBC345", "#7a4e8d", "#2b9d88"],
+        backgroundColor: ["#36A2EB", "#4CAF50", "#8e5ea2", "#3cba9f"],
+        hoverBackgroundColor: ["#2A92DB", "#45a049", "#7a4e8d", "#2b9d88"],
         borderWidth: 0,
       },
     ],
@@ -141,21 +148,21 @@ const DashboardCharts: React.FC<Props> = ({ data, theme }) => {
       {
         label: "Количество устройств",
         data: orderedALData,
-        backgroundColor: ["#07dd07ff", "#ffd900ff", "#fd0000ff"],
-        hoverBackgroundColor: ["#00c500ff", "#c9ab00ff", "#db0000ff"],
+        backgroundColor: ["#4CAF50", "#ffd900ff", "#fd0000ff"],
+        hoverBackgroundColor: ["#45a049", "#c9ab00ff", "#db0000ff"],
         borderWidth: 0,
       },
     ],
   };
 
   const errorsStatusData = {
-    labels: ["ARM без ошибок", "ARM с ошибками"],
+    labels: ["АРМ без ошибок", "АРМ с ошибками"],
     datasets: [
       {
         label: "Количество устройств",
         data: [armCount - errorsCount, errorsCount],
-        backgroundColor: ["#4CAF50", "#FF6384"],
-        hoverBackgroundColor: ["#45a049", "#FF4263"],
+        backgroundColor: ["#4CAF50", "#fd0000ff"],
+        hoverBackgroundColor: ["#45a049", "#db0000ff"],
         borderWidth: 0,
       },
     ],
@@ -167,8 +174,8 @@ const DashboardCharts: React.FC<Props> = ({ data, theme }) => {
       {
         label: "Количество устройств",
         data: [kscCount, armCount - kscCount],
-        backgroundColor: ["#4CAF50", "#FF6384"],
-        hoverBackgroundColor: ["#45a049", "#FF4263"],
+        backgroundColor: ["#4CAF50", "#fd0000ff"],
+        hoverBackgroundColor: ["#45a049", "#db0000ff"],
         borderWidth: 0,
       },
     ],
@@ -180,8 +187,8 @@ const DashboardCharts: React.FC<Props> = ({ data, theme }) => {
       {
         label: "Количество устройств",
         data: [puppetARMCount, armCount - puppetARMCount],
-        backgroundColor: ["#4CAF50", "#FF6384"],
-        hoverBackgroundColor: ["#45a049", "#FF4263"],
+        backgroundColor: ["#4CAF50", "#fd0000ff"],
+        hoverBackgroundColor: ["#45a049", "#db0000ff"],
         borderWidth: 0,
       },
     ],
@@ -225,56 +232,59 @@ const DashboardCharts: React.FC<Props> = ({ data, theme }) => {
   };
 
   return (
-    <ChartBox>
-      <ChartContainer theme={theme}>
-        <ChartTitle theme={theme}>Статус АРМ</ChartTitle>
-        <Doughnut
-          data={armStatusData}
-          options={options}
-          plugins={[centerTextPlugin]}
-        />
-      </ChartContainer>
-      <ChartContainer theme={theme}>
-        <ChartTitle theme={theme}>ОС на АРМ</ChartTitle>
-        <Doughnut
-          data={osData}
-          options={options}
-          plugins={[centerTextPlugin]}
-        />
-      </ChartContainer>
-      <ChartContainer theme={theme}>
-        <ChartTitle theme={theme}>Версия AL на АРМ</ChartTitle>
-        <Doughnut
-          data={osALData}
-          options={options}
-          plugins={[centerTextPlugin]}
-        />
-      </ChartContainer>
-      <ChartContainer theme={theme}>
-        <ChartTitle theme={theme}>ksc на ARM</ChartTitle>
-        <Doughnut
-          data={kscStatusData}
-          options={options}
-          plugins={[centerTextPlugin]}
-        />
-      </ChartContainer>
-      <ChartContainer theme={theme}>
-        <ChartTitle theme={theme}>АРМ в Puppet</ChartTitle>
-        <Doughnut
-          data={puppetARMStatusData}
-          options={options}
-          plugins={[centerTextPlugin]}
-        />
-      </ChartContainer>
-      <ChartContainer theme={theme}>
-        <ChartTitle theme={theme}>ARM без ошибок</ChartTitle>
-        <Doughnut
-          data={errorsStatusData}
-          options={options}
-          plugins={[centerTextPlugin]}
-        />
-      </ChartContainer>
-    </ChartBox>
+    <ChartSection>
+      <Subtitle>Защищенные сегменты сети</Subtitle>
+      <ChartBox>
+        <ChartContainer theme={theme}>
+          <ChartTitle theme={theme}>Статус АРМ</ChartTitle>
+          <Doughnut
+            data={armStatusData}
+            options={options}
+            plugins={[centerTextPlugin]}
+          />
+        </ChartContainer>
+        <ChartContainer theme={theme}>
+          <ChartTitle theme={theme}>ОС на АРМ</ChartTitle>
+          <Doughnut
+            data={osData}
+            options={options}
+            plugins={[centerTextPlugin]}
+          />
+        </ChartContainer>
+        <ChartContainer theme={theme}>
+          <ChartTitle theme={theme}>Версия AL на АРМ</ChartTitle>
+          <Doughnut
+            data={osALData}
+            options={options}
+            plugins={[centerTextPlugin]}
+          />
+        </ChartContainer>
+        <ChartContainer theme={theme}>
+          <ChartTitle theme={theme}>ksc на АРМ</ChartTitle>
+          <Doughnut
+            data={kscStatusData}
+            options={options}
+            plugins={[centerTextPlugin]}
+          />
+        </ChartContainer>
+        <ChartContainer theme={theme}>
+          <ChartTitle theme={theme}>АРМ в Puppet</ChartTitle>
+          <Doughnut
+            data={puppetARMStatusData}
+            options={options}
+            plugins={[centerTextPlugin]}
+          />
+        </ChartContainer>
+        <ChartContainer theme={theme}>
+          <ChartTitle theme={theme}>АРМ без ошибок</ChartTitle>
+          <Doughnut
+            data={errorsStatusData}
+            options={options}
+            plugins={[centerTextPlugin]}
+          />
+        </ChartContainer>
+      </ChartBox>
+    </ChartSection>
   );
 };
 

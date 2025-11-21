@@ -2,6 +2,7 @@ export interface DeviceData {
   name: string;
   ip: string;
   arm: "Да" | "Нет";
+  lan: string;
   ksc: "Да" | "Нет";
   puppet: "Да" | "Нет";
   error?: "Да" | "Нет";

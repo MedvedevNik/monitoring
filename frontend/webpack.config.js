@@ -2,6 +2,7 @@ const path = require("path");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const webpack = require("webpack");
 const dotenv = require("dotenv");
+const CopyWebpackPlugin = require("copy-webpack-plugin"); // Убедитесь, что он установлен: npm install copy-webpack-plugin --save-dev
 
 const env = dotenv.config().parsed;
 
@@ -42,10 +43,6 @@ module.exports = {
         ],
       },
       {
-        test: /\.json$/,
-        use: "json-loader",
-      },
-      {
         test: /\.(js)x?$/,
         exclude: /node_modules/,
         use: "babel-loader",
@@ -68,6 +65,17 @@ module.exports = {
     new HtmlWebpackPlugin({
       template: path.resolve(__dirname, "public", "index.html"),
       filename: "index.html",
+    }),
+    new CopyWebpackPlugin({
+      patterns: [
+        {
+          from: "public/",
+          to: "./",
+          globOptions: {
+            ignore: ["./public/index.html"],
+          },
+        },
+      ],
     }),
     new webpack.DefinePlugin(envKeys),
   ],

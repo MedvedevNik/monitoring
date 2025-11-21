@@ -3,19 +3,31 @@ import { ThemeProvider } from "styled-components";
 import {
   MetricCards,
   DashboardCharts,
-  DeviceTable,
+  NetworkCharts,
   CurrentDate,
+  FooterApp,
 } from "./components";
 import useFetchData from "./hooks/useFetchData";
 import useThemeSwitcher from "./hooks/useThemeSwitcher";
-import { AppMain, AppContainer, Header, Title, Footer } from "./App.styles";
+import {
+  AppMain,
+  AppContainer,
+  Header,
+  Title,
+  ChartsSection,
+} from "./App.styles";
 import { GlobalStyle } from "./GlobalStyle";
 // import logo from "./assets/itlogo.png";
 
 const App: React.FC = () => {
-  const apiUrl =
-    process.env.REACT_APP_API_URL || "http://localhost:5000/api/data";
-  const { data, loading, error } = useFetchData(`${apiUrl}/api/data`);
+  const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:5000";
+  // Добавляем флаг для использования мок-данных. Можно сделать его настраиваемым через .env
+  const useMockData = process.env.REACT_APP_USE_MOCK_DATA === "true";
+
+  const { data, loading, error } = useFetchData(
+    `${apiUrl}/api/data`,
+    useMockData
+  );
   const theme = useThemeSwitcher();
 
   return (
@@ -30,16 +42,16 @@ const App: React.FC = () => {
           <AppContainer theme={theme}>
             <Header>
               {/* <img src={logo} alt="Логотип компании" /> */}
-              <Title>Система мониторинга</Title>
+              <Title>Система мониторинга войсковой части 3526</Title>
               <CurrentDate theme={theme} />
             </Header>
-            <MetricCards data={data} theme={theme} />
-            <DashboardCharts data={data} theme={theme} />
-            <DeviceTable data={data} theme={theme} />
+            {/* <MetricCards data={data} theme={theme} /> */}
+            <ChartsSection>
+              <NetworkCharts data={data} theme={theme} />
+              <DashboardCharts data={data} theme={theme} />
+            </ChartsSection>
           </AppContainer>
-          <Footer theme={theme}>
-            Разработано для мониторинга состояния систем
-          </Footer>
+          <FooterApp theme={theme} />
         </AppMain>
       ) : error ? (
         <AppMain theme={theme}>
