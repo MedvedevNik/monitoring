@@ -27,5 +27,6 @@ def get_monitoring_data():
         return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
-    # Запускаем сервер на порту 5000
-    app.run(debug=True, port=5000)
+    # Запускаем сервер на порту 5000, слушаем все интерфейсы (host='0.0.0.0')
+    # Отключаем debug=True для продакшен-среды в контейнере
+    app.run(host='0.0.0.0', port=5000)
